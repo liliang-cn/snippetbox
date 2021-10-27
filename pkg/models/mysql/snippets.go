@@ -7,6 +7,7 @@ import (
 	"github.com/liliang-cn/snippetbox/pkg/models"
 )
 
+// SnippetModel 类型封装了 sql.DB 连接池
 type SnippetModel struct {
 	DB *sql.DB
 }

@@ -13,29 +13,36 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// 定义一个用来存放应用级的依赖项的application结构体
+// 定义一个结构体用来存放应用级的依赖项
 type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	snippets      *mysql.SnippetModel
-	templateCache map[string]*template.Template
+	errorLog      *log.Logger                   // 错误日志
+	infoLog       *log.Logger                   // 普通日志
+	snippets      *mysql.SnippetModel           // mysql.SnippetModel 实例
+	templateCache map[string]*template.Template // html模版文件内存缓存
+
 }
 
 func main() {
+	// 应用端口通过命令行参数传入
 	addr := flag.String("addr", ":4000", "HTTP network address")
+	// mysql的dsn通过命令行参数传入
 	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
 
+	// 解析命令行传入的参数
 	flag.Parse()
 
+	// 初始化日志和错误日志
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// 创建数据库连接池
 	db, err := openDB(*dsn)
 
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 
+	// 应用程序退出前关闭数据库连接
 	defer db.Close()
 
 	// 初始化一个模版缓存
@@ -44,6 +51,7 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	// 初始化一个应用配置
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
@@ -51,6 +59,7 @@ func main() {
 		templateCache: templateCache,
 	}
 
+	// 初始化一个 http.Server 结构体
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
@@ -64,6 +73,7 @@ func main() {
 	errorLog.Fatal(err)
 }
 
+// 封装sql.Open, 给定DSN返回连接池
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 

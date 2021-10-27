@@ -6,9 +6,11 @@ import (
 	"path/filepath"
 )
 
+// 定义一个类型用来存放需要插入到html模版中的动态数据
 type templateData struct {
-	Snippet  *models.Snippet
-	Snippets []*models.Snippet
+	Snippet     *models.Snippet   // 某一条 Snippet
+	Snippets    []*models.Snippet // Snippet 列表
+	CurrentYear int               // 当前年
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
