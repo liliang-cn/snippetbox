@@ -4,6 +4,7 @@ import (
 	"github.com/liliang-cn/snippetbox/pkg/models"
 	"html/template"
 	"path/filepath"
+	"time"
 )
 
 // 定义一个类型用来存放需要插入到html模版中的动态数据
@@ -11,6 +12,16 @@ type templateData struct {
 	Snippet     *models.Snippet   // 某一条 Snippet
 	Snippets    []*models.Snippet // Snippet 列表
 	CurrentYear int               // 当前年
+}
+
+// 定义一个格式化时间的函数
+func humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
+}
+
+// 初始化一个 template.FuncMap 对象，将其存为全局变量，相当于一个查找映射
+var functions = template.FuncMap{
+	"humanDate": humanDate,
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
@@ -28,7 +39,9 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		// 将文件名（如'home.page.tmpl'）从完整路径中提取出来并赋给name变量
 		name := filepath.Base(page)
 		// 解析页面模版为模版集合
-		ts, err := template.ParseFiles(page)
+		// FuncMap 必须在ParseFiles()之前注册进去，意味着我们需要通过template.New()来新建一个空模版
+		// 然后使用Func()方法来注册FuncMap
+		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}
