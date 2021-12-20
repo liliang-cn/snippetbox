@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/liliang-cn/snippetbox/pkg/forms"
 	"github.com/liliang-cn/snippetbox/pkg/models"
 	"net/http"
 	"strconv"
@@ -21,7 +22,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "create.page.tmpl", nil)
+	app.render(w, r, "create.page.tmpl", &templateData{Form: forms.New(nil)})
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
@@ -49,12 +50,26 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
-		return 
+		return
 	}
 
 	title := r.PostForm.Get("title")
 	content := r.PostForm.Get("content")
 	expires := r.PostForm.Get("expires")
+
+	form := forms.New(r.PostForm)
+	form.Required("title", "content", "expires")
+	form.MaxLength("title", 100)
+	form.PermittedValues("expires", "365", "7", "1")
+
+	// 如果有校验错误，则将 create.page.html 文件模版重新显示，并将提交的值和检验的错误传给模版文件
+	if !form.Valid() {
+		app.render(w, r, "create.page.tmpl", &templateData{
+			Form: form,
+		})
+
+		return
+	}
 
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
