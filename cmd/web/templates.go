@@ -14,6 +14,7 @@ type templateData struct {
 	Snippets    []*models.Snippet // Snippet 列表
 	CurrentYear int               // 当前年
 	Form        *forms.Form       // 提交的数据和校验信息
+	Flash       string            // 一次性提示信息
 }
 
 // 定义一个格式化时间的函数

@@ -26,12 +26,13 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-// 将当前年添加到 templateData 中
+// 填充默认页面字段
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	if td == nil {
 		td = &templateData{}
 	}
 	td.CurrentYear = time.Now().Year()
+	td.Flash = app.session.PopString(r, "flash")
 	return td
 }
 

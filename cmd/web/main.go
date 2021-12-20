@@ -3,10 +3,12 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"github.com/golangcollege/sessions"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/liliang-cn/snippetbox/pkg/models/mysql"
 
@@ -19,7 +21,7 @@ type application struct {
 	infoLog       *log.Logger                   // 普通日志
 	snippets      *mysql.SnippetModel           // mysql.SnippetModel 实例
 	templateCache map[string]*template.Template // html模版文件内存缓存
-
+	session       *sessions.Session
 }
 
 func main() {
@@ -28,6 +30,8 @@ func main() {
 	// mysql的dsn通过命令行参数传入
 	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
 
+	// session 的密钥
+	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key")
 	// 解析命令行传入的参数
 	flag.Parse()
 
@@ -51,12 +55,16 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	session := sessions.New([]byte(*secret))
+	session.Lifetime = 12 * time.Hour
+
 	// 初始化一个应用配置
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		snippets:      &mysql.SnippetModel{DB: db},
 		templateCache: templateCache,
+		session:       session,
 	}
 
 	// 初始化一个 http.Server 结构体
