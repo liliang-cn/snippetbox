@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"github.com/golangcollege/sessions"
@@ -22,6 +23,7 @@ type application struct {
 	snippets      *mysql.SnippetModel           // mysql.SnippetModel 实例
 	templateCache map[string]*template.Template // html模版文件内存缓存
 	session       *sessions.Session
+	users         *mysql.UserModel
 }
 
 func main() {
@@ -66,13 +68,24 @@ func main() {
 		snippets:      &mysql.SnippetModel{DB: db},
 		templateCache: templateCache,
 		session:       session,
+		users:         &mysql.UserModel{DB: db},
+	}
+
+	// TLS 配置
+	tlsConfig := &tls.Config{
+		PreferServerCipherSuites: true,
+		CurvePreferences:         []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
 
 	// 初始化一个 http.Server 结构体
 	srv := &http.Server{
-		Addr:     *addr,
-		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Addr:         *addr,
+		ErrorLog:     errorLog,
+		Handler:      app.routes(),
+		TLSConfig:    tlsConfig,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on: %s\n", srv.Addr)
