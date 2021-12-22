@@ -45,6 +45,7 @@ func (f *Form) MaxLength(field string, d int) {
 	}
 }
 
+// 允许的值校验
 func (f *Form) PermittedValues(field string, opts ...string) {
 	value := f.Get(field)
 	if value == "" {
@@ -58,7 +59,7 @@ func (f *Form) PermittedValues(field string, opts ...string) {
 	f.Errors.Add(field, "This field is invalid")
 }
 
-// Implement a Valid method which returns true if there are no errors.
+// 表单提交数据是否校验通过
 func (f *Form) Valid() bool {
 	return len(f.Errors) == 0
 }

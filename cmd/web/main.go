@@ -57,6 +57,7 @@ func main() {
 
 	session := sessions.New([]byte(*secret))
 	session.Lifetime = 12 * time.Hour
+	session.Secure = true
 
 	// 初始化一个应用配置
 	app := &application{
@@ -76,8 +77,8 @@ func main() {
 
 	infoLog.Printf("Starting server on: %s\n", srv.Addr)
 
-	err = srv.ListenAndServe()
-
+	//err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
 
