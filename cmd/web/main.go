@@ -26,6 +26,10 @@ type application struct {
 	users         *mysql.UserModel
 }
 
+type contextKey string
+
+const contextKeyIsAuthenticated = contextKey("isAuthenticated")
+
 func main() {
 	// 应用端口通过命令行参数传入
 	addr := flag.String("addr", ":4000", "HTTP network address")
