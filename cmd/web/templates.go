@@ -16,6 +16,7 @@ type templateData struct {
 	Form            *forms.Form       // 提交的数据和校验信息
 	Flash           string            // 一次性提示信息
 	IsAuthenticated bool              // 是否已鉴权
+	CSRFToken       string            // CSRFToken
 }
 
 // 定义一个格式化时间的函数
