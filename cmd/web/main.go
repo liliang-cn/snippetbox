@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/golangcollege/sessions"
+	"github.com/liliang-cn/snippetbox/pkg/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -20,10 +21,18 @@ import (
 type application struct {
 	errorLog      *log.Logger                   // 错误日志
 	infoLog       *log.Logger                   // 普通日志
-	snippets      *mysql.SnippetModel           // mysql.SnippetModel 实例
 	templateCache map[string]*template.Template // html模版文件内存缓存
-	session       *sessions.Session
-	users         *mysql.UserModel
+	session       *sessions.Session             // session 对象
+	users         interface {
+		Insert(string, string, string) error
+		Authenticate(string, string) (int, error)
+		Get(int) (*models.User, error)
+	} // 接口类型
+	snippets interface {
+		Insert(string, string, string) (int, error)
+		Get(int) (*models.Snippet, error)
+		Latest() ([]*models.Snippet, error)
+	} // mysql.SnippetModel 实例
 }
 
 type contextKey string
